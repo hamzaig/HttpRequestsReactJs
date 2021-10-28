@@ -4,22 +4,35 @@ import MoviesList from './components/MoviesList';
 import './App.css';
 
 function App() {
+
   const [movies, setMovies] = useState([]);
   const [isLoading, setIsLoading] = useState();
+  const [error, setError] = useState(null);
+
   const fetchMoviesHandler = async () => {
     setIsLoading(true);
-    const response = await fetch("https://swapi.dev/api/films");
-    const data = await response.json();
-    const transformedMovies = data.results.map(movieData => {
-      return {
-        id: movieData.episode_id,
-        title: movieData.title,
-        openingText: movieData.opening_crawl,
-        releaseDate: movieData.release_date,
+    setError(null);
+    try {
+      const response = await fetch("https://swapi.dev/api/film");
+      const data = await response.json();
+      if (!response.ok) {
+        throw Error("something went wrong");
       }
-    });
-    setMovies(transformedMovies);
-    setIsLoading(false);
+
+      const transformedMovies = data.results.map(movieData => {
+        return {
+          id: movieData.episode_id,
+          title: movieData.title,
+          openingText: movieData.opening_crawl,
+          releaseDate: movieData.release_date,
+        }
+      });
+      setMovies(transformedMovies);
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   return (
@@ -29,6 +42,7 @@ function App() {
       </section>
       <section>
         {!isLoading && <MoviesList movies={movies} />}
+        {!isLoading && error && <p>{error}</p>}
         {isLoading && <p>Loading ...</p>}
       </section>
     </React.Fragment>
